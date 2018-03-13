@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/PuerkitoBio/goquery"
+	"github.com/howeyc/gopass"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,14 +13,11 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
 	"test/filp/qtool"
-
-	"github.com/PuerkitoBio/goquery"
 )
 
 func main() {
-	Ver := 1
+	Ver := 3
 
 	// 參數設定
 	all := flag.Bool("a", false, "一次填完")
@@ -60,7 +59,7 @@ func main() {
 		qtool.Open("http://999jacky.co.place/flip/file")
 	}
 	if getstat.Ver < Ver {
-		fmt.Println("!Beta!")
+		fmt.Print("!Beta!")
 	}
 
 	// SetYear
@@ -80,7 +79,8 @@ func main() {
 	fmt.Print("帳：")
 	fmt.Scanln(&account)
 	fmt.Print("密：")
-	fmt.Scanln(&password)
+	rpass, _ := gopass.GetPasswdMasked()
+	password = string(rpass)
 
 	if !*DebugMode {
 		qtool.CallClear()
@@ -110,9 +110,11 @@ func main() {
 
 	qnext := true
 
-	if strings.Contains(string(lrbody), "帳號不存在") {
+	if strings.Contains(string(lrbody), "帳號不存在") || strings.Contains(string(lrbody), "密碼錯誤") {
 		fmt.Println("登入失敗")
+		fmt.Scanln()
 		qnext = false
+		os.Exit(1)
 	}
 
 	// 尋找問卷
@@ -120,6 +122,7 @@ func main() {
 	ndoneq := 0
 	var qLink []string
 	for page := 1; qnext; page++ {
+		found := false
 
 		if *DebugMode {
 			log.Printf("第%d頁：\n", page)
@@ -143,6 +146,7 @@ func main() {
 				if band == "" {
 					continue
 				}
+				found = true
 				dlink, _ := s.Find(findstr).Find("td.td.major > a").Attr("href")
 				dlink = "http://flip.stust.edu.tw" + dlink
 				allq++
@@ -163,7 +167,7 @@ func main() {
 			qnext = false
 		})
 		// 無內容
-		if allq == 0 {
+		if allq == 0 || found == false {
 			qnext = false
 		}
 
