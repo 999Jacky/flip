@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	Ver := 3
+	Ver := 4
 
 	// 參數設定
 	all := flag.Bool("a", false, "一次填完")
@@ -143,6 +143,7 @@ func main() {
 				findstr := "#pollList_tr" + strconv.Itoa(j)
 				ifs := s.Find(findstr + ">td:nth-child(7)").Text()
 				band := s.Find(findstr).Find("td.td.major").Text()
+				isOutDate := s.Find(findstr + "> td.td.major > span").Text()
 				if band == "" {
 					continue
 				}
@@ -150,7 +151,7 @@ func main() {
 				dlink, _ := s.Find(findstr).Find("td.td.major > a").Attr("href")
 				dlink = "http://flip.stust.edu.tw" + dlink
 				allq++
-				if strings.Contains(band, "學習動機問卷") && ifs != "已完成" {
+				if strings.Contains(band, "學習動機問卷") && ifs != "已完成" && isOutDate != " (逾期) " {
 					ndoneq++
 					qLink = append(qLink, dlink)
 				}
@@ -264,7 +265,7 @@ func main() {
 				fmt.Println(strconv.Itoa(j+1) + "：" + qTitle)
 			}
 			fmt.Println("    輸入16組數字(以,分開)")
-			fmt.Println("    1=7,2=6,....,7=1")
+			fmt.Printf("    1=7分\n    2=6分\n    ....\n    7=1分\n")
 			fmt.Print("    Input：")
 			input := ""
 			fmt.Scanln(&input)

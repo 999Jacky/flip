@@ -3,8 +3,7 @@ package qtool
 import "strings"
 
 func Getbody(str string) (string, int) {
-	a := 0 // (
-	b := 0 // {
+	a := 0 // {
 	count := 0
 	jsonstr := ""
 	str = strings.Trim(str, " ")
@@ -22,14 +21,8 @@ func Getbody(str string) (string, int) {
 		case "}":
 			a--
 			jsonstr += "}"
-		case "(":
-			b++
-			jsonstr += "("
-		case ")":
-			b--
-			jsonstr += ")"
 		case ",":
-			if a == 0 && b == 0 {
+			if a == 0 {
 				return jsonstr, count
 			} else {
 				jsonstr += ","
